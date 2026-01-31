@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamPay | Monad</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #5c24ff;
+            --accent: #00ff9d;
+            --bg: #0a0a0e;
+            --surface: #13131a;
+            --text: #ffffff;
+            --danger: #ff2a6d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 0, 0, 0.5) 51%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(19, 19, 26, 0.8);
+            border-bottom: 2px solid var(--primary);
+            backdrop-filter: blur(10px);
+            z-index: 1001;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .connect-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 0 5px var(--accent);
+        }
+
+        .connect-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .video-container {
+            position: relative;
+            width: 80%;
+            max-width: 1000px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border: 2px solid #333;
+            box-shadow: 0 0 50px rgba(92, 36, 255, 0.1);
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        /* Mock Video Content (just a colored div for demo) */
+        .video-content {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #1a0b2e, #2b1250);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            color: rgba(255,255,255,0.1);
+            transition: filter 0.5s ease;
+        }
+
+        .video-content.blurred {
+            filter: blur(20px);
+        }
+
+        .overlay-ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .control-panel {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .action-btn {
+            padding: 15px 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: transform 0.2s;
+        }
+
+        .start-btn {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 15px var(--primary);
+        }
+        .start-btn:active { transform: scale(0.95); }
+
+        .stop-btn {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 0 15px var(--danger);
+        }
+        .stop-btn:active { transform: scale(0.95); }
+        .stop-btn:disabled {
+            filter: grayscale(1);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .dashboard {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--primary);
+            padding: 15px;
+            min-width: 200px;
+            z-index: 20;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .metric span:first-child { color: var(--primary); }
+        .metric span:last-child { font-family: 'Orbitron'; color: var(--text); }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">MONAD // STREAMPAY</div>
+        <button id="connectWalletBtn" class="connect-btn">Connect Wallet</button>
+    </header>
+
+    <main>
+        <div class="video-container">
+            <div id="videoContent" class="video-content blurred">
+                PREMIUM CONTENT LOCKED
+            </div>
+            
+            <div class="dashboard hidden" id="dashboard">
+                <div class="metric">
+                    <span>STATUS</span>
+                    <span id="statusText">PAUSED</span>
+                </div>
+                <div class="metric">
+                    <span>BALANCE</span>
+                    <span id="balanceDisplay">0.00 MON</span>
+                </div>
+                <div class="metric">
+                    <span>SPENT</span>
+                    <span id="spentDisplay">0.00 MON</span>
+                </div>
+                <div class="metric">
+                    <span>TIME</span>
+                    <span id="timeDisplay">00:00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button id="startStreamBtn" class="action-btn start-btn" disabled>Start Stream</button>
+            <button id="stopStreamBtn" class="action-btn stop-btn" disabled>Stop Stream</button>
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIG ---
+        const RATE_PER_SECOND = 0.0000001; // Mock Rate in MON
+        const INITIAL_DEPOSIT = 0.001; // Mock initial deposit
+
+        // --- STATE ---
+        let provider, signer, account;
+        let isStreaming = false;
+        let balance = 0;
+        let spent = 0;
+        let startTime = 0;
+        let timerInterval;
+
+        // --- DOM ELEMENTS ---
+        const connectBtn = document.getElementById('connectWalletBtn');
+        const startBtn = document.getElementById('startStreamBtn');
+        const stopBtn = document.getElementById('stopStreamBtn');
+        const videoContent = document.getElementById('videoContent');
+        const dashboard = document.getElementById('dashboard');
+        const statusText = document.getElementById('statusText');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const spentDisplay = document.getElementById('spentDisplay');
+        const timeDisplay = document.getElementById('timeDisplay');
+
+        // --- FUNCTIONS ---
+
+        async function connectWallet() {
+            // Mock connection for demo purposes if no extension found
+            if (typeof window.ethereum === 'undefined') {
+                console.log("No wallet found, simulating connection...");
+                account = "0x71C...9A23"; // Mock address
+            } else {
+                try {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    signer = provider.getSigner();
+                    account = await signer.getAddress();
+                } catch (e) {
+                    console.error("User denied connection", e);
+                    return;
+                }
+            }
+            
+            // UI Updates on Connect
+            connectBtn.innerText = account.substring(0, 6) + "..." + account.substring(38);
+            connectBtn.style.borderColor = "#5c24ff";
+            connectBtn.style.color = "#fff";
+            
+            // Enable Start Button
+            startBtn.disabled = false;
+            
+            // Setup Mock Balance
+            balance = INITIAL_DEPOSIT;
+            updateDashboard();
+            dashboard.classList.remove('hidden');
+        }
+
+        function startStream() {
+            if (balance <= 0) {
+                alert("Insufficient balance! Please deposit MON.");
+                return;
+            }
+
+            // Simulate Contract Transaction
+            console.log("Simulating: StreamPay.startStream()");
+
+            isStreaming = true;
+            startTime = Date.now();
+            
+            // UI Updates
+            videoContent.classList.remove('blurred');
+            videoContent.innerText = "PLAYING PREMIUM STREAM Source: Monad TV";
+            statusText.innerText = "LIVE";
+            statusText.style.color = "#00ff9d";
+            
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            // Start Timer Loop
+            timerInterval = setInterval(updateStreamLoop, 100);
+        }
+
+        function stopStream() {
+            // Simulate Contract Transaction
+            console.log("Simulating: StreamPay.stopStream()");
+
+            isStreaming = false;
+            clearInterval(timerInterval);
+
+            // UI Updates
+            videoContent.classList.add('blurred');
+            videoContent.innerText = "PREMIUM CONTENT LOCKED";
+            statusText.innerText = "PAUSED";
+            statusText.style.color = "#ff2a6d";
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        function updateStreamLoop() {
+            if (!isStreaming) return;
+
+            const now = Date.now();
+            const elapsedSeconds = (now - startTime) / 1000;
+            const currentCost = elapsedSeconds * RATE_PER_SECOND;
+
+            if (currentCost >= balance) {
+                stopStream();
+                alert("Balance depleted!");
+                balance = 0;
+            } else {
+                spent = currentCost; // In real app, this grows
+                // For visualization, we show remaining balance dynamically
+            }
+            
+            updateDashboard(elapsedSeconds);
+        }
+
+        function updateDashboard(elapsedSeconds = 0) {
+            let currentBalance = balance - spent;
+            balanceDisplay.innerText = currentBalance.toFixed(8) + " MON";
+            spentDisplay.innerText = spent.toFixed(8) + " MON";
+            
+            // Format Time
+            const mins = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+            const secs = Math.floor(elapsedSeconds % 60).toString().padStart(2, '0');
+            timeDisplay.innerText = `${mins}:${secs}`;
+        }
+
+        // --- EVENTS ---
+        connectBtn.addEventListener('click', connectWallet);
+        startBtn.addEventListener('click', startStream);
+        stopBtn.addEventListener('click', stopStream);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Contract Deploy Rehberi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .step h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .code-box {
+            background: #2d3748;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .screenshot-placeholder {
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 15px 0;
+            color: #6c757d;
+        }
+
+        .quick-links {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 Smart Contract Deploy Rehberi</h1>
+
+        <div class="warning">
+            <strong>⚠️ Önce Yapmanız Gerekenler:</strong><br>
+            1. MetaMask yüklü olmalı<br>
+            2. Monad Testnet eklenmiş olmalı<br>
+            3. Test MONAD tokenleri olmalı (faucet'ten alın)
+        </div>
+
+        <div class="quick-links">
+            <a href="https://remix.ethereum.org" target="_blank" class="btn">📝 Remix IDE'yi Aç</a>
+            <a href="https://metamask.io/download" target="_blank" class="btn btn-secondary">🦊 MetaMask İndir</a>
+            <button onclick="addMonadNetwork()" class="btn btn-secondary">➕ Monad Testnet Ekle</button>
+        </div>
+
+        <!-- ADIM 1 -->
+        <div class="step">
+            <h2>
+                <span class="step-number">1</span>
+                Remix IDE'yi Aç
+            </h2>
+            <p>Tarayıcınızda şu adresi açın:</p>
+            <div class="code-box">
+                https://remix.ethereum.org
+                <button class="copy-btn" onclick="copyToClipboard('https://remix.ethereum.org')">Kopyala</button>
+            </div>
+            <div class="screenshot-placeholder">
+                📸 Remix IDE açılacak - sol tarafta dosya ağacı göreceksiniz
+            </div>
+        </div>
+
+        <!-- ADIM 2 -->
+        <div class="step">
+            <h2>
+                <span class="step-number">2</span>
+                Contract Dosyasını Yükle
+            </h2>
+            <p><strong>Seçenek A: Dosyayı Direkt Sürükle-Bırak (En Kolay)</strong></p>
+            <ol>
+                <li>Bilgisayarınızda <code>contracts/SumoBattle.sol</code> dosyasını bulun</li>
+                <li>Remix IDE'nin sol tarafındaki dosya paneline sürükleyip bırakın</li>
+                <li>✅ Dosya yüklendi!</li>
+            </ol>
+
+            <p style="margin-top: 20px;"><strong>Seçenek B: Manuel Oluştur</strong></p>
+            <ol>
+                <li>Remix'te sol menüde "File Explorer" (📁 ikon) aktif olsun</li>
+                <li>"contracts" klasörüne sağ tık → "New File"</li>
+                <li>Dosya adı: <code>SumoBattle.sol</code></li>
+                <li>Contract kodunu kopyala (aşağıda) → Remix'e yapıştır</li>
+            </ol>
+
+            <button onclick="openContractFile()" class="btn" style="margin-top: 15px;">
+                📄 SumoBattle.sol Dosyasını Aç
+            </button>
+        </div>
+
+        <!-- ADIM 3 -->
+        <div class="step">
+            <h2>
+                <span class="step-number">3</span>
+                Contract'ı Compile Et
+            </h2>
+            <ol>
+                <li>Sol menüden <strong>"Solidity Compiler"</strong> ikonuna tıkla (📘 ikon)</li>
+                <li><strong>Compiler version</strong> seç: <code>0.8.20</code> veya üzeri</li>
+                <li>Büyük mavi <strong>"Compile SumoBattle.sol"</strong> butonuna tıkla</li>
+                <li>✅ Yeşil tik işareti görünmeli (hata yoksa)</li>
+            </ol>
+
+            <div class="warning">
+                <strong>⚠️ Hata Alırsanız:</strong><br>
+                - Compiler version'un 0.8.20+ olduğundan emin olun<br>
+                - "Auto compile" açık olabilir (sorun değil)<br>
+                - Kırmızı hata varsa contract kodunu kontrol edin
+            </div>
+        </div>
+
+        <!-- ADIM 4 -->
+        <div class="step">
+            <h2>
+                <span class="step-number">4</span>
+                MetaMask'ı Bağla
+            </h2>
+            <ol>
+                <li>Sol menüden <strong>"Deploy & Run Transactions"</strong> ikonuna tıkla (🚀 ikon)</li>
+                <li><strong>Environment</strong> dropdown'unda <code>Injected Provider - MetaMask</code> seç</li>
+                <li>MetaMask popup açılır → <strong>"Connect"</strong> tıkla</li>
+                <li>MetaMask'ta <strong>Monad Testnet</strong>'te olduğundan emin ol</li>
+                <li>Cüzdan adresiniz "Account" bölümünde görünmeli</li>
+            </ol>
+
+            <div class="success">
+                ✅ Bağlantı başarılı! Account bölümünde adresinizi göreceksiniz.
+            </div>
+        </div>
+
+        <!-- ADIM 5 -->
+        <div class="step">
+            <h2>
+                <span class="step-number">5</span>
+                Contract'ı Deploy Et
+            </h2>
+            <ol>
+                <li>"Contract" dropdown'unda <strong>SumoBattle</strong> seçili olmalı</li>
+                <li>Turuncu <strong>"Deploy"</strong> butonuna tıkla</li>
+                <li>MetaMask popup açılır → Gas fee gösterir</li>
+                <li><strong>"Confirm"</strong> tıkla (işlem onayı)</li>
+                <li>30-60 saniye bekle... ⏳</li>
+                <li>✅ "Deployed Contracts" bölümünde contract görünür!</li>
+            </ol>
+
+            <div class="screenshot-placeholder">
+                📸 Alt tarafta "Deployed Contracts" bölümünde contract'ınız görünecek
+            </div>
+        </div>
+
+        <!-- ADIM 6 -->
+        <div class="step">
+            <h2>
+                <span class="step-number">6</span>
+                Contract Address'ini Kopyala
+            </h2>
+            <ol>
+                <li>"Deployed Contracts" bölümünde contract'ınızı bulun</li>
+                <li>Contract adının yanında adres var (örn: <code>0x1234...5678</code>)</li>
+                <li><strong>Kopyala ikonuna</strong> tıkla 📋</li>
+                <li>✅ Address kopyalandı!</li>
+            </ol>
+
+            <div class="success">
+                <strong>🎉 Tebrikler! Contract deploy edildi!</strong><br>
+                Şimdi bu adresi projenize yapıştırmanız gerekiyor.
+            </div>
+        </div>
+
+        <!-- ADIM 7 -->
+        <div class="step">
+            <h2>
+                <span class="step-number">7</span>
+                Address'i Projeye Ekle
+            </h2>
+            <p><strong>Kod editörünüzde:</strong></p>
+
+            <p><code>frontend/sumo-game/contract.js</code> dosyasını açın:</p>
+            <div class="code-box">
+                const CONTRACT_CONFIG = {
+                address: '0xKOPYALADIĞINIZ_ADRES_BURAYA', // 👈 Yapıştır
+                chainId: 41454,
+                // ...
+                };
+                <button class="copy-btn" onclick="alert('Kendi contract adresinizi yapıştırın!')">?</button>
+            </div>
+
+            <p style="margin-top: 20px;"><code>frontend/sumo-game/app.js</code> dosyasını açın:</p>
+            <div class="code-box">
+                const AppState = {
+                // ...
+                mockMode: false, // 👈 true'dan false yap
+                // ...
+                };
+                <button class="copy-btn" onclick="alert('mockMode: false yapın!')">?</button>
+            </div>
+        </div>
+
+        <!-- FİNAL -->
+        <div class="success" style="text-align: center; padding: 30px; margin-top: 30px;">
+            <h2>🎉 Harika! Deploy İşlemi Tamamlandı!</h2>
+            <p style="margin: 20px 0;">Artık Vercel'e deploy edebilirsiniz:</p>
+            <div class="code-box" style="text-align: left;">
+                cd ~/Desktop/Monad-StreamPay
+                ./deploy.sh
+                <button class="copy-btn" onclick="copyToClipboard('./deploy.sh')">Kopyala</button>
+            </div>
+            <p style="margin-top: 20px;">
+                <strong>Sıradaki:</strong> Vercel'e deploy → QR kod oluştur → Paylaş!
+            </p>
+        </div>
+
+        <div class="warning" style="margin-top: 30px;">
+            <strong>🆘 Sorun mu yaşıyorsunuz?</strong><br><br>
+            <strong>Problem:</strong> MetaMask bağlanmıyor<br>
+            <strong>Çözüm:</strong> Monad Testnet eklendiğinden ve seçili olduğundan emin olun<br><br>
+
+            <strong>Problem:</strong> Insufficient funds hatası<br>
+            <strong>Çözüm:</strong> Test MONAD tokenlerine ihtiyacınız var (faucet'ten alın)<br><br>
+
+            <strong>Problem:</strong> Compilation error<br>
+            <strong>Çözüm:</strong> Compiler version 0.8.20+ olmalı<br><br>
+
+            <strong>Problem:</strong> Transaction failed<br>
+            <strong>Çözüm:</strong> Gas fee artırın veya tekrar deneyin
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Kopyalandı: ' + text);
+            });
+        }
+
+        function openContractFile() {
+            const path = window.location.origin + '/contracts/SumoBattle.sol';
+            window.open('../contracts/SumoBattle.sol', '_blank');
+        }
+
+        async function addMonadNetwork() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0xa1ce',
+                            chainName: 'Monad Testnet',
+                            nativeCurrency: {
+                                name: 'Monad',
+                                symbol: 'MONAD',
+                                decimals: 18
+                            },
+                            rpcUrls: ['https://testnet.monad.xyz'],
+                            blockExplorerUrls: ['https://explorer.testnet.monad.xyz']
+                        }]
+                    });
+                    alert('✅ Monad Testnet eklendi!');
+                } catch (error) {
+                    alert('❌ Hata: ' + error.message);
+                }
+            } else {
+                alert('⚠️ MetaMask bulunamadı! Lütfen önce MetaMask yükleyin.');
+                window.open('https://metamask.io/download', '_blank');
+            }
+        }
+    </script>
+</body>
+
+</html>

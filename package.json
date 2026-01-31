@@ -1,0 +1,14 @@
+{
+  "name": "monad-sumo-battle",
+  "version": "1.0.0",
+  "description": "Monad Sumo Battle Royale Game",
+  "scripts": {
+    "deploy": "npx hardhat run scripts/deploy.js --network monadTestnet",
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  }
+}

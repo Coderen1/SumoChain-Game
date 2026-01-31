@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oyuna Katıl - Monad Sumo Battle 🥋</title>
+    <meta name="description" content="Monad Sumo Battle Royale oyununa katıl ve kazanan ol!">
+
+    <!-- Ethers.js -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f, #1a1a2e);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: #00f0ff;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: #ff00ff;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: #00ff88;
+            top: 50%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(50px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-30px, 30px) scale(0.9);
+            }
+        }
+
+        .container {
+            background: rgba(20, 20, 30, 0.95);
+            border: 2px solid #00f0ff;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #00f0ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #b0b0c0;
+            margin-bottom: 2rem;
+            font-size: 1.125rem;
+        }
+
+        .game-info {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00f0ff;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .game-id {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #00f0ff;
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            background: rgba(10, 10, 15, 0.6);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #b0b0c0;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00f0ff;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-waiting {
+            background: rgba(255, 170, 0, 0.2);
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+        }
+
+        .status-ready {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f0ff, #00b8cc);
+            color: #0a0a0f;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 240, 255, 0.6);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 2px solid #00f0ff;
+            margin-top: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 240, 255, 0.2);
+        }
+
+        .host-info {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(255, 0, 255, 0.1);
+            border-left: 4px solid #ff00ff;
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        .host-info strong {
+            color: #ff00ff;
+        }
+
+        .rules {
+            margin-top: 2rem;
+            text-align: left;
+            padding: 1.5rem;
+            background: rgba(10, 10, 15, 0.6);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .rules h3 {
+            color: #00f0ff;
+            margin-bottom: 1rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .rules ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #b0b0c0;
+        }
+
+        .rules li:before {
+            content: '🥋';
+            position: absolute;
+            left: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 240, 255, 0.3);
+            border-top-color: #00f0ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: rgba(255, 0, 102, 0.2);
+            border: 1px solid #ff0066;
+            color: #ff0066;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="container">
+        <div class="logo">🥋</div>
+        <h1>MONAD SUMO BATTLE</h1>
+        <p class="subtitle">Savaşa Davet Edildiniz!</p>
+
+        <div id="loading-state" style="display: none;">
+            <div class="loading"></div>
+            <p style="margin-top: 1rem; color: #b0b0c0;">Oyun bilgileri yükleniyor...</p>
+        </div>
+
+        <div id="error-state" style="display: none;">
+            <div class="error-message">
+                <strong>Hata:</strong> <span id="error-text"></span>
+            </div>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">
+                Ana Sayfaya Dön
+            </button>
+        </div>
+
+        <div id="game-content" style="display: none;">
+            <div class="game-info">
+                <div class="game-id">Oyun #<span id="game-id">-</span></div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Oyuncular</div>
+                        <div class="stat-value"><span id="player-count">0</span>/<span id="max-players">20</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Ödül Havuzu</div>
+                        <div class="stat-value"><span id="prize-pool">0</span> MONAD</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Bahis</div>
+                        <div class="stat-value"><span id="bet-amount">0.01</span> MONAD</div>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="status-badge status-waiting" id="game-status">Oyuncular Bekleniyor</span>
+                </div>
+            </div>
+
+            <div class="host-info" id="host-info" style="display: none;">
+                <strong>Host:</strong> <span id="host-address">-</span>
+            </div>
+
+            <button id="join-btn" class="btn btn-primary" onclick="joinGame()">
+                🎮 Oyuna Katıl
+            </button>
+
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">
+                Daha Fazla Bilgi
+            </button>
+
+            <div class="rules">
+                <h3>📜 Oyun Kuralları</h3>
+                <ul>
+                    <li>20 oyuncu arenaya girer</li>
+                    <li>Rakiplerinizi arenanın dışına itin</li>
+                    <li>WASD veya ok tuşları ile hareket edin</li>
+                    <li>SPACE ile dash yapın</li>
+                    <li>Son kalan oyuncu tüm ödülü kazanır!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="invite-utils.js"></script>
+    <script>
+        let gameId = null;
+        let hostAddress = null;
+
+        // Initialize page
+        async function init() {
+            const params = getUrlParams();
+            gameId = params.game;
+            hostAddress = params.host;
+
+            // Validate game ID
+            if (!gameId || !isValidGameId(gameId)) {
+                showError('Geçersiz oyun ID\'si. Lütfen geçerli bir davet linki kullanın.');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading-state').style.display = 'block';
+
+            try {
+                // Fetch game info
+                const gameInfo = await getGameInfo(gameId);
+                displayGameInfo(gameInfo);
+
+                // Track invite
+                if (hostAddress) {
+                    trackInvite(gameId, hostAddress);
+                }
+
+                // Hide loading, show content
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('game-content').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading game:', error);
+                showError('Oyun bilgileri yüklenirken bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+
+        function displayGameInfo(gameInfo) {
+            document.getElementById('game-id').textContent = gameInfo.id;
+            document.getElementById('player-count').textContent = gameInfo.playerCount;
+            document.getElementById('max-players').textContent = gameInfo.maxPlayers;
+            document.getElementById('prize-pool').textContent = gameInfo.prizePool;
+            document.getElementById('bet-amount').textContent = gameInfo.betAmount;
+
+            // Update status
+            const statusBadge = document.getElementById('game-status');
+            if (gameInfo.playerCount >= gameInfo.maxPlayers) {
+                statusBadge.textContent = 'Oyun Dolu';
+                statusBadge.className = 'status-badge status-ready';
+                document.getElementById('join-btn').disabled = true;
+            } else if (gameInfo.playerCount >= gameInfo.maxPlayers - 3) {
+                statusBadge.textContent = 'Neredeyse Dolu!';
+                statusBadge.className = 'status-badge status-ready';
+            } else {
+                statusBadge.textContent = `${gameInfo.maxPlayers - gameInfo.playerCount} Oyuncu Bekleniyor`;
+                statusBadge.className = 'status-badge status-waiting';
+            }
+
+            // Show host info if available
+            if (hostAddress) {
+                document.getElementById('host-info').style.display = 'block';
+                document.getElementById('host-address').textContent =
+                    hostAddress.substring(0, 6) + '...' + hostAddress.substring(hostAddress.length - 4);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'block';
+            document.getElementById('error-text').textContent = message;
+        }
+
+        function joinGame() {
+            // Redirect to main game with game ID parameter
+            window.location.href = `index.html?game=${gameId}&join=true`;
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

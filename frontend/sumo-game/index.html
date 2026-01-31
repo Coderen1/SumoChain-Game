@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monad Sumo Battle Royale 🥋</title>
+    <meta name="description" content="Battle Royale Sumo oyunu - Monad blockchain üzerinde bahis yap ve kazanan ol!">
+
+    <!-- Phaser 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+
+    <!-- Ethers.js -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app">
+
+        <!-- Landing Screen -->
+        <div id="landing-screen" class="screen active">
+            <div class="container">
+                <div class="hero">
+                    <div class="logo-container">
+                        <div class="sumo-icon">🥋</div>
+                        <h1 class="title">
+                            <span class="gradient-text">MONAD</span><br>
+                            SUMO BATTLE
+                        </h1>
+                    </div>
+
+                    <p class="subtitle">20 Oyuncu Girer, Sadece 1 Kazanır</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="active-games">0</div>
+                            <div class="stat-label">Aktif Oyunlar</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-prize">0 MONAD</div>
+                            <div class="stat-label">Toplam Ödül Havuzu</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="online-players">0</div>
+                            <div class="stat-label">Çevrimiçi Oyuncu</div>
+                        </div>
+                    </div>
+
+                    <div class="cta-section">
+                        <button id="connect-wallet-btn" class="btn btn-primary btn-large">
+                            <span class="btn-icon">🔗</span>
+                            Cüzdanı Bağla
+                        </button>
+                        <p class="wallet-status" id="wallet-status">Cüzdan bağlı değil</p>
+                    </div>
+
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <div class="info-icon">💰</div>
+                            <h3>Bahis Yap</h3>
+                            <p>Monad cüzdanınızla bahis yapın</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">⚔️</div>
+                            <h3>Savaş</h3>
+                            <p>Rakiplerinizi arenadan itin</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">🏆</div>
+                            <h3>Kazan</h3>
+                            <p>Son kalan tüm ödülü alır</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen">
+            <div class="container">
+                <div class="lobby-header">
+                    <h2 class="screen-title">Oyun Lobisi</h2>
+                    <div class="game-id">Oyun #<span id="current-game-id">1</span></div>
+                </div>
+
+                <div class="lobby-content">
+                    <div class="prize-pool-display">
+                        <div class="prize-label">Ödül Havuzu</div>
+                        <div class="prize-amount" id="lobby-prize-pool">0 MONAD</div>
+                        <div class="prize-info">Kazanan tüm ödülü alır (5% platform ücreti)</div>
+                    </div>
+
+                    <div class="player-counter">
+                        <div class="counter-circle">
+                            <span id="player-count">0</span>/<span id="max-players">20</span>
+                        </div>
+                        <div class="counter-label">Oyuncu</div>
+                    </div>
+
+                    <div class="bet-section">
+                        <label for="bet-amount">Bahis Miktarı</label>
+                        <div class="input-group">
+                            <input type="number" id="bet-amount" value="0.01" step="0.01" min="0.001">
+                            <span class="input-suffix">MONAD</span>
+                        </div>
+                        <button id="join-game-btn" class="btn btn-primary btn-large">
+                            <span class="btn-icon">🎮</span>
+                            Oyuna Katıl
+                        </button>
+                    </div>
+
+                    <div class="players-list">
+                        <h3>Oyuncular</h3>
+                        <div id="players-container" class="players-grid">
+                            <!-- Players will be added dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="lobby-status" id="lobby-status">
+                        Oyuncular bekleniyor...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-ui">
+                <div class="game-header">
+                    <div class="game-info">
+                        <div class="info-item">
+                            <span class="info-label">Kalan Oyuncu:</span>
+                            <span class="info-value" id="remaining-players">20</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ödül:</span>
+                            <span class="info-value" id="game-prize">0 MONAD</span>
+                        </div>
+                    </div>
+                    <div class="timer" id="game-timer">5:00</div>
+                </div>
+
+                <div id="game-container"></div>
+
+                <div class="game-controls">
+                    <div class="controls-hint">
+                        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> veya
+                        <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> ile hareket et
+                        <span class="spacer">|</span>
+                        <kbd>SPACE</kbd> Dash
+                    </div>
+                </div>
+
+                <div class="elimination-feed" id="elimination-feed">
+                    <!-- Eliminations will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Winner Screen -->
+        <div id="winner-screen" class="screen">
+            <div class="container">
+                <div class="winner-content">
+                    <div class="confetti"></div>
+                    <div class="trophy-icon">🏆</div>
+                    <h2 class="winner-title" id="winner-title">Kazandınız!</h2>
+                    <div class="winner-address" id="winner-address">0x...</div>
+                    <div class="winner-prize">
+                        <div class="prize-label">Kazanılan Ödül</div>
+                        <div class="prize-amount" id="winner-prize">0 MONAD</div>
+                    </div>
+
+                    <div class="winner-actions">
+                        <button id="play-again-btn" class="btn btn-primary btn-large">
+                            <span class="btn-icon">🔄</span>
+                            Tekrar Oyna
+                        </button>
+                        <button id="view-transaction-btn" class="btn btn-secondary">
+                            İşlemi Görüntüle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Yükleniyor...</div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="invite-utils.js"></script>
+    <script src="contract.js"></script>
+    <script src="game.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Dashboard - Monad Sumo Battle</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            background: linear-gradient(135deg, #00f0ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: rgba(20, 20, 30, 0.95);
+            border: 2px solid #00f0ff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        }
+
+        .dashboard-card h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00f0ff;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #00f0ff;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(10, 10, 15, 0.8);
+            border: 2px solid #00f0ff;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            border-color: #ff00ff;
+        }
+
+        .btn-create {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #00f0ff, #00b8cc);
+            color: #0a0a0f;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.125rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 240, 255, 0.6);
+        }
+
+        .game-info-display {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00f0ff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .game-info-display.active {
+            display: block;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #b0b0c0;
+        }
+
+        .info-value {
+            color: #00f0ff;
+            font-weight: bold;
+        }
+
+        .qr-preview {
+            text-align: center;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 15px;
+            margin-top: 1.5rem;
+        }
+
+        .qr-preview canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-action {
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #ff00ff, #cc00cc);
+            color: #ffffff;
+        }
+
+        .btn-copy {
+            background: rgba(0, 240, 255, 0.2);
+            border: 2px solid #00f0ff;
+            color: #00f0ff;
+        }
+
+        .btn-share {
+            background: rgba(255, 170, 0, 0.2);
+            border: 2px solid #ffaa00;
+            color: #ffaa00;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .players-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(10, 10, 15, 0.6);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00f0ff, #ff00ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-address {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .player-joined {
+            color: #b0b0c0;
+            font-size: 0.875rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: rgba(10, 10, 15, 0.6);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00f0ff;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-label {
+            color: #b0b0c0;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 968px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>🥋 Host Dashboard</h1>
+            <p class="subtitle">Oyun oluştur, davet et ve yönet</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Create Game Card -->
+            <div class="dashboard-card">
+                <h2>🎮 Yeni Oyun Oluştur</h2>
+
+                <div class="form-group">
+                    <label for="bet-amount">Bahis Miktarı (MONAD)</label>
+                    <input type="number" id="bet-amount" value="0.01" step="0.01" min="0.001">
+                </div>
+
+                <div class="form-group">
+                    <label for="max-players">Maksimum Oyuncu</label>
+                    <select id="max-players">
+                        <option value="10">10 Oyuncu</option>
+                        <option value="20" selected>20 Oyuncu</option>
+                        <option value="30">30 Oyuncu</option>
+                        <option value="50">50 Oyuncu</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="game-duration">Oyun Süresi (Dakika)</label>
+                    <input type="number" id="game-duration" value="5" min="1" max="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="host-wallet">Host Cüzdan Adresi</label>
+                    <input type="text" id="host-wallet" placeholder="0x..." readonly>
+                </div>
+
+                <button class="btn-create" onclick="createGame()">
+                    ✨ Oyun Oluştur
+                </button>
+
+                <div id="game-info" class="game-info-display">
+                    <div class="info-row">
+                        <span class="info-label">Oyun ID:</span>
+                        <span class="info-value" id="created-game-id">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Durum:</span>
+                        <span class="info-value" id="game-status">Beklemede</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Oluşturulma:</span>
+                        <span class="info-value" id="created-time">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code & Invite Card -->
+            <div class="dashboard-card">
+                <h2>📱 Davet & QR Kod</h2>
+
+                <div id="qr-section" style="display: none;">
+                    <div class="qr-preview">
+                        <canvas id="dashboard-qr"></canvas>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-action btn-download" onclick="downloadQRCode()">
+                            📥 QR İndir
+                        </button>
+                        <button class="btn-action btn-copy" onclick="copyInviteLink()">
+                            📋 Link Kopyala
+                        </button>
+                        <button class="btn-action btn-share" onclick="openQRGenerator()">
+                            🔗 QR Oluşturucu
+                        </button>
+                        <button class="btn-action" onclick="shareOnSocial()">
+                            📱 Paylaş
+                        </button>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label>Davet Linki</label>
+                        <input type="text" id="invite-url" readonly>
+                    </div>
+                </div>
+
+                <div id="no-game-message" style="text-align: center; padding: 3rem; color: #b0b0c0;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎮</div>
+                    <p>Önce bir oyun oluşturun</p>
+                </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="dashboard-card full-width-card">
+                <h2>📊 İstatistikler</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="total-invites">0</div>
+                        <div class="stat-label">Toplam Davet</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="current-players">0</div>
+                        <div class="stat-label">Katılan Oyuncu</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="prize-pool">0</div>
+                        <div class="stat-label">Ödül Havuzu (MONAD)</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #00f0ff; margin-bottom: 1rem; font-family: 'Orbitron', sans-serif;">
+                    👥 Katılan Oyuncular
+                </h3>
+
+                <div id="players-list" class="players-list">
+                    <div style="text-align: center; padding: 2rem; color: #b0b0c0;">
+                        Henüz oyuncu yok
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="invite-utils.js"></script>
+
+    <script>
+        let currentGameId = null;
+        let currentInviteUrl = '';
+        let hostAddress = null;
+        let mockPlayers = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Mock wallet connection
+            hostAddress = '0x' + Math.random().toString(16).substring(2, 42);
+            document.getElementById('host-wallet').value = formatAddress(hostAddress);
+        });
+
+        // Fallback notification function if invite-utils.js hasn't loaded
+        if (typeof showNotification === 'undefined') {
+            window.showNotification = function (message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 1rem 1.5rem;
+                    background: ${type === 'success' ? '#00f0ff' : '#ff0066'};
+                    color: #0a0a0f;
+                    border-radius: 10px;
+                    font-weight: bold;
+                    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            };
+        }
+
+        function formatAddress(address) {
+            return address.substring(0, 6) + '...' + address.substring(address.length - 4);
+        }
+
+        async function createGame() {
+            const betAmount = document.getElementById('bet-amount').value;
+            const maxPlayers = document.getElementById('max-players').value;
+            const duration = document.getElementById('game-duration').value;
+
+            if (!betAmount || betAmount <= 0) {
+                showNotification('Geçerli bir bahis miktarı girin!', 'error');
+                return;
+            }
+
+            // Mock game creation
+            currentGameId = Math.floor(Math.random() * 10000) + 1;
+            currentInviteUrl = generateInviteLink(currentGameId, hostAddress);
+
+            // Update UI
+            document.getElementById('created-game-id').textContent = currentGameId;
+            document.getElementById('created-time').textContent = new Date().toLocaleTimeString('tr-TR');
+            document.getElementById('game-info').classList.add('active');
+
+            // Generate QR code
+            await generateDashboardQR();
+
+            // Show QR section
+            document.getElementById('qr-section').style.display = 'block';
+            document.getElementById('no-game-message').style.display = 'none';
+            document.getElementById('invite-url').value = currentInviteUrl;
+
+            // Update stats
+            updateStats();
+
+            // Start mock player joining
+            startMockPlayerJoining();
+
+            showNotification('Oyun başarıyla oluşturuldu! 🎉', 'success');
+        }
+
+        async function generateDashboardQR() {
+            try {
+                // Check if QRCode library is loaded
+                if (typeof QRCode === 'undefined') {
+                    console.error('QRCode library not loaded!');
+                    alert('QR kod kütüphanesi yüklenemedi. Sayfayı yenileyin.');
+                    return;
+                }
+
+                const canvas = document.getElementById('dashboard-qr');
+                if (!canvas) {
+                    console.error('Canvas element not found!');
+                    return;
+                }
+
+                console.log('Generating QR code for:', currentInviteUrl);
+
+                await QRCode.toCanvas(canvas, currentInviteUrl, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#0a0a0f',
+                        light: '#ffffff'
+                    },
+                    errorCorrectionLevel: 'H'
+                });
+
+                console.log('QR code generated successfully!');
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                alert('QR kod oluşturulurken hata oluştu: ' + error.message);
+            }
+        }
+
+        function downloadQRCode() {
+            const canvas = document.getElementById('dashboard-qr');
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `monad-sumo-game-${currentGameId}.png`;
+            link.href = url;
+            link.click();
+            showNotification('QR kod indirildi!', 'success');
+        }
+
+        async function copyInviteLink() {
+            const success = await copyToClipboard(currentInviteUrl);
+            if (success) {
+                showNotification('Davet linki kopyalandı!', 'success');
+            } else {
+                showNotification('Kopyalama başarısız!', 'error');
+            }
+        }
+
+        function openQRGenerator() {
+            window.open(`qr-generator.html?game=${currentGameId}`, '_blank');
+        }
+
+        function shareOnSocial() {
+            const message = '🥋 Monad Sumo Battle Royale\'e katıl! Son kalan kazanır! 💰';
+            shareToSocial('twitter', currentInviteUrl, message);
+        }
+
+        function updateStats() {
+            const betAmount = parseFloat(document.getElementById('bet-amount').value);
+            const playerCount = mockPlayers.length;
+            const prizePool = (playerCount * betAmount * 0.95).toFixed(3);
+
+            document.getElementById('total-invites').textContent = getInviteStats(currentGameId, hostAddress);
+            document.getElementById('current-players').textContent = playerCount;
+            document.getElementById('prize-pool').textContent = prizePool;
+        }
+
+        function addPlayer(address) {
+            const player = {
+                address: address,
+                joinedAt: Date.now()
+            };
+            mockPlayers.push(player);
+
+            const playersList = document.getElementById('players-list');
+
+            // Clear "no players" message
+            if (mockPlayers.length === 1) {
+                playersList.innerHTML = '';
+            }
+
+            const playerItem = document.createElement('div');
+            playerItem.className = 'player-item';
+            playerItem.innerHTML = `
+                <div class="player-avatar">🥋</div>
+                <div class="player-info">
+                    <div class="player-address">${formatAddress(address)}</div>
+                    <div class="player-joined">${formatTimeAgo(player.joinedAt)}</div>
+                </div>
+            `;
+
+            playersList.appendChild(playerItem);
+            updateStats();
+        }
+
+        function startMockPlayerJoining() {
+            const maxPlayers = parseInt(document.getElementById('max-players').value);
+            let count = 0;
+
+            const interval = setInterval(() => {
+                if (count >= maxPlayers - 1) {
+                    clearInterval(interval);
+                    document.getElementById('game-status').textContent = 'Oyun Başladı';
+                    showNotification('Oyun dolu! Başlıyor...', 'success');
+                    return;
+                }
+
+                const mockAddress = '0x' + Math.random().toString(16).substring(2, 42);
+                addPlayer(mockAddress);
+                count++;
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

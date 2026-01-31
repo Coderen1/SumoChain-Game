@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "monad-sumo-battle",
+  "builds": [
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/sumo-game/(.*)",
+      "dest": "/frontend/sumo-game/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/frontend/sumo-game/index.html"
+    }
+  ]
+}
