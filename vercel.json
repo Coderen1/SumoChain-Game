@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd frontend/sumo-game && echo 'Static files ready'",
+  "outputDirectory": "frontend/sumo-game",
+  "installCommand": "echo 'No dependencies'",
+  "framework": null
+}
